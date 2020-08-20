@@ -1,0 +1,76 @@
+#!/bin/sh
+
+ADDON_NAME=hm-tmux
+LICENSES_DIR=licenses
+CONFIG_DIR=/usr/local/etc/config
+WWW_DIR=/usr/local/etc/config/addons/www/hm-tmux
+ADDON_DIR=/usr/local/addons/${ADDON_NAME}
+PROFILE_DIR=/usr/local/etc/profile.d
+RCD_DIR=${CONFIG_DIR}/rc.d
+
+TOOL_TMUX=tmux
+
+ARCH="$(uname -m)"
+
+# make sure this addon is only executed on
+# supported platforms
+
+if [ "$1" == "HM-RASPBERRYMATIC" ]; then
+  echo $1 >>$LOG_FILE
+  
+  mount | grep /usr/local 2>&1 >/dev/null
+    if [ $? -eq 1 ]; then
+      mount /usr/local
+    fi
+
+  # create necessary directories
+  mkdir -p ${ADDON_DIR}
+  chmod 755 ${ADDON_DIR}
+  # web-configuration
+  mkdir -p ${WWW_DIR}
+  chmod 755 ${WWW_DIR}
+  # rc.d
+  mkdir -p ${RCD_DIR}
+  chmod 755 ${RCD_DIR}
+  # profile.d
+  mkdir -p ${PROFILE_DIR}
+  chmod 755 ${PROFILE_DIR}
+
+
+  # remove old stuff
+  rm -rf $ADDON_DIR/*
+
+  # copy profile.d
+  cp -af profile.d/* ${PROFILE_DIR}/
+
+  # copy licenses
+  cp -af ${LICENSES_DIR} ${ADDON_DIR}/
+
+  if [ ${ARCH} == "i686" ]; then
+    FILE_DIR=x86
+  else
+    FILE_DIR=arm
+  fi
+
+  # copy addon tmux
+  cp -af ${FILE_DIR}/${TOOL_TMUX}/* ${ADDON_DIR}/
+  
+  ###############################################################
+
+  # copy web-configuration
+  cp -af www/* ${WWW_DIR}
+
+  # copy version
+  cp -af VERSION ${ADDON_DIR}/
+
+  # copy startup script
+  cp -af rc.d/* ${RCD_DIR}
+
+  #build system launcher
+  chmod +x ${RCD_DIR}/${ADDON_NAME}
+   
+fi
+
+# synchronize filesystem before performing a reboot
+# afterwards
+sync

@@ -1,0 +1,43 @@
+#!/bin/sh
+
+ADDONNAME=hm-tmux
+ADDON_DIR=/usr/local/addons/hm-tmux
+PROFILE_DIR=/usr/local/etc/profile.d
+WWW_DIR=/usr/local/etc/config/addons/www/hm-tmux
+LOCALE_DIR=/usr/lib/locale
+
+
+case "$1" in
+""|start)
+	if [ ! -d $LOCALE_DIR ]
+	then
+	  mount -o remount,rw /
+	  ln -sf $ADDON_DIR/lib/locale $LOCALE_DIR
+	  mount -o remount,ro /
+	fi
+  ;;
+info)
+  echo "Info: <b>HM-tmux CCU Addon</b><br>"
+  echo "Info: Terminal-Multiplexer<br>"
+  echo "Info: (c) 2020 Frank Hettrich<br>"
+  echo "Info: <a href='https://github.com/fhetty/hm-tmux'>https://github.com/fhetty/hm-tmux</a>"
+  echo "Version: $(cat ${ADDON_DIR}/VERSION)"
+  echo "Name: HM-tmux<br>"
+  echo "Operations: uninstall"
+  echo "Update: /addons/${ADDONNAME}/update-check.cgi"
+  ;;
+uninstall)
+  rm -rf $ADDON_DIR
+  rm -rf $WWW_DIR
+  rm -rf $PROFILE_DIR/hm-tmux-addons.sh
+  if [ -d $LOCALE_DIR ]
+  then
+    mount -o remount,rw /
+    rm -rf $LOCALE_DIR
+    mount -o remount,ro /
+	fi
+  
+  ;;
+esac
+
+exit 0
